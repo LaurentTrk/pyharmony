@@ -1,5 +1,5 @@
 """Client class for connecting to the Logitech Harmony."""
-
+from __future__ import print_function
 import json
 import logging
 import time
@@ -115,18 +115,25 @@ class HarmonyClient(sleekxmpp.ClientXMPP):
         action_cmd.text = 'action={"type"::"IRCommand","deviceId"::"'+device_id+'","command"::"'+command+'"}:status=press'
         iq_cmd.set_payload(action_cmd)
         result = iq_cmd.send(block=False)
-        return True
 
-    def turn_off(self):
+        action_cmd.attrib['mime'] = (
+            'vnd.logitech.harmony/vnd.logitech.harmony.engine?holdAction')
+        action_cmd.text = 'action={"type"::"IRCommand","deviceId"::"'+device_id+'","command"::"'+command+'"}:status=release'
+        iq_cmd.set_payload(action_cmd)
+        result = iq_cmd.send(block=False)
+
+        return result
+
+    def power_off(self):
         """Turns the system off if it's on, otherwise it does nothing.
 
         Returns:
           True.
         """
         activity = self.get_current_activity()
-        print activity
+        print(activity)
         if activity != -1:
-            print "OFF"
+            print("OFF")
             self.start_activity(-1)
         return True
 

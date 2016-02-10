@@ -6,3 +6,6 @@
 .pydevproject
 
 PyHarmony.egg-info
+build/
+dist/
+pyharmony.egg-info
