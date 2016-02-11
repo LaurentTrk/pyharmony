@@ -10,11 +10,23 @@ from sleekxmpp.xmlstream import ET
 
 LOGGER = logging.getLogger(__name__)
 
+from sleekxmpp.xmlstream.matcher.base import MatcherBase
+from sleekxmpp.xmlstream.handler import Callback
+
+class MatchAll(MatcherBase):
+    def __init__(self, criteria):
+        self._criteria = criteria
+
+    def match(self, xml):
+        """Check if a stanza matches the stored criteria.
+        Meant to be overridden.
+        """
+        return True
 
 class HarmonyClient(sleekxmpp.ClientXMPP):
     """An XMPP client for connecting to the Logitech Harmony."""
 
-    def __init__(self, auth_token):
+    def __init__(self, auth_token, message_callback=None):
         user = '%s@connect.logitech.com/gatorade.' % auth_token
         password = auth_token
         plugin_config = {
@@ -23,6 +35,8 @@ class HarmonyClient(sleekxmpp.ClientXMPP):
         }
         super(HarmonyClient, self).__init__(
             user, password, plugin_config=plugin_config)
+        print("Adding event handler")
+        self.registerHandler(Callback('Example Handler',MatchAll(''),message_callback))
 
     def get_config(self):
         """Retrieves the Harmony device configuration.
@@ -137,7 +151,7 @@ class HarmonyClient(sleekxmpp.ClientXMPP):
             self.start_activity(-1)
         return True
 
-def create_and_connect_client(ip_address, port, token):
+def create_and_connect_client(ip_address, port, token, message_callback=None):
     """Creates a Harmony client and initializes session.
 
     Args:
@@ -148,7 +162,7 @@ def create_and_connect_client(ip_address, port, token):
     Returns:
       An instance of HarmonyClient that is connected.
     """
-    client = HarmonyClient(token)
+    client = HarmonyClient(token, message_callback)
     client.connect(address=(ip_address, port),
                    use_tls=False, use_ssl=False)
     client.process(block=False)
